@@ -23,8 +23,8 @@ Talk to Dave and he'll look things up, open sites and apps, take notes, and tell
 | "what's the time" | Tells you the time |
 | "open notepad" | Opens Notepad |
 | "take a note" | Types what you say into Notepad |
-| "set alarm" | Asks how many minutes, then lets you know when time's up |
-| "change voice" | Switches between male and female voices |
+| "set alarm" | Asks how many minutes, then beeps when time's up. You can keep talking to Dave in the meantime |
+| "change voice" | Switches between male and female voices, if your PC has both installed |
 | "exit" or "quit" | Closes Dave |
 
 ## Run it locally
@@ -37,6 +37,8 @@ cd "AI_Assistant-main/Voice+Assistant+Code+and+Files/Code and Files"
 pip install pyttsx3 SpeechRecognition wikipedia pyautogui pyaudio
 python voice.py
 ```
+
+Stay quiet for a second after starting. Dave listens to the room first so he can tell your voice apart from background noise.
 
 ## To do
 
