@@ -9,6 +9,11 @@ import pyautogui ## controls the mouse and kyboard just like a human
 import re
 import threading
 import winsound
+import json
+import urllib.request
+
+OLLAMA_URL = "http://localhost:11434/api/chat"
+OLLAMA_MODEL = "qwen3.5:9b"  # any model from `ollama list` works here
 
 ##Importing the voice for AI
 engine = pyttsx3.init('sapi5') ##one of the engine present inside this library
@@ -35,6 +40,31 @@ def ring_alarm(minutes):
     print(f"\n⏰ Alarm: {minutes} minute(s) are up!")
     for _ in range(5):
         winsound.Beep(1000, 500)   # 1000 Hz for 0.5 seconds, 5 times
+
+SYSTEM_PROMPT = {"role": "system", "content": "You are Dave, a voice assistant. Your answers are read out loud, so reply in two or three short sentences of plain text with no lists or formatting."}
+chat_history = []  # past questions and answers, so follow-ups like "tell me more" work
+
+def ask_ollama(question):
+    # Send the question, plus the last few exchanges, to the local Ollama model
+    new_message = {"role": "user", "content": question}
+    data = {
+        "model": OLLAMA_MODEL,
+        "messages": [SYSTEM_PROMPT] + chat_history[-10:] + [new_message],  # last 5 questions and answers
+        "stream": False,
+        "think": False,  # skip step-by-step reasoning so answers come back fast
+    }
+    request = urllib.request.Request(
+        OLLAMA_URL,
+        data=json.dumps(data).encode(),
+        headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(request, timeout=120) as response:
+        answer = json.loads(response.read())["message"]["content"]
+
+    # Only remember the exchange once it worked
+    chat_history.append(new_message)
+    chat_history.append({"role": "assistant", "content": answer})
+    return answer
 
 ##speak function which will convert the text to speech
 def speak(audio):
@@ -175,12 +205,24 @@ if __name__=="__main__": ## this is the root function
                 timer.start()
                 speak(f"Alarm set for {minutes} minutes.")
 
+        elif 'start over' in query or 'new conversation' in query:
+            chat_history.clear()
+            speak("Okay, I've forgotten our conversation.")
+
         elif 'exit' in query or 'quit' in query:
             speak("Goodbye, Sir!")
             break
 
         else:
-            speak("I'm sorry, I didn't understand that. Could you please repeat or try another command?")
+            # Not a built-in command, so let the local AI model answer it
+            print("Thinking...")
+            try:
+                answer = ask_ollama(query)
+            except Exception:
+                speak("Sorry, I couldn't reach Ollama. Make sure it's running.")
+            else:
+                print(answer)
+                speak(answer)
 
 
 
