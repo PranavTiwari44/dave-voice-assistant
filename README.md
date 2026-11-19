@@ -8,7 +8,7 @@
 
 ## About
 
-Talk to Dave and he'll look things up, open sites and apps, take notes, and tell you the time. He greets you when he starts and answers out loud.
+Talk to Dave and he'll look things up, open sites and apps, take notes, and tell you the time. Ask him anything else and a local AI model answers, running on your own PC through Ollama, and he remembers the conversation so you can ask follow-ups. He greets you when he starts and answers out loud.
 
 ## What you can say
 
