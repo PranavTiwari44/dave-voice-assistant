@@ -36,7 +36,7 @@ You'll need Windows, Python, a microphone and an internet connection. For questi
 ```bash
 git clone https://github.com/PranavTiwari44/AI_Assistant-main.git
 cd "AI_Assistant-main/Voice+Assistant+Code+and+Files/Code and Files"
-pip install pyttsx3 SpeechRecognition wikipedia pyautogui pyaudio
+pip install pywin32 SpeechRecognition wikipedia pyautogui pyaudio
 python voice.py
 ```
 

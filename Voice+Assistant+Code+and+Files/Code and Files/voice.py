@@ -1,4 +1,4 @@
-import pyttsx3 ##for the ai to speak, ## text to speech library
+import win32com.client ## for the ai to speak, using the text to speech built into Windows
 import datetime
 import speech_recognition ##for getting input voices   ## speech to text library
 import wikipedia #for surfing wikipedia
@@ -16,9 +16,10 @@ OLLAMA_URL = "http://localhost:11434/api/chat"
 OLLAMA_MODEL = "qwen3.5:9b"  # any model from `ollama list` works here
 
 ##Importing the voice for AI
-engine = pyttsx3.init('sapi5') ##one of the engine present inside this library
-voices = engine.getProperty('voices') 
-engine.setProperty('voice', voices[0].id) #Male voice represent 0
+# We talk to Windows' speech system (SAPI) directly. pyttsx3 2.99 only spoke the first sentence.
+engine = win32com.client.Dispatch("SAPI.SpVoice")
+voices = engine.GetVoices()
+engine.Voice = voices.Item(0) #Male voice represent 0
 
 WORD_NUMBERS = {
     "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
@@ -68,8 +69,7 @@ def ask_ollama(question):
 
 ##speak function which will convert the text to speech
 def speak(audio):
-    engine.say(audio)
-    engine.runAndWait() ##it will basically stop
+    engine.Speak(audio) ## speaks and waits until it's done
 
 def greet():
     hour = int(datetime.datetime.now().hour)
@@ -86,15 +86,14 @@ def greet():
 
 # Function to change the AI's voice
 def change_voice():
-    if len(voices) < 2:
+    if voices.Count < 2:
         speak("Sorry, only one voice is installed on this computer.")
         return
-    current_voice = engine.getProperty('voice')
-    if current_voice == voices[0].id:  # Male voice
-        engine.setProperty('voice', voices[1].id)  # Female voice
+    if engine.Voice.Id == voices.Item(0).Id:  # Male voice
+        engine.Voice = voices.Item(1)  # Female voice
         speak("Voice changed to female.")
     else:
-        engine.setProperty('voice', voices[0].id)  # Male voice
+        engine.Voice = voices.Item(0)  # Male voice
         speak("Voice changed to male.")
 
 ##developing differenrt command
@@ -149,19 +148,25 @@ if __name__=="__main__": ## this is the root function
                 print(results)
                 speak(results)
 
-        elif 'open instagram' in query:
+        elif 'instagram' in query:
+            speak("Opening Instagram.")
             webbrowser.open("https://www.instagram.com/")
 
-        elif 'search on google' in query:
-            speak("What would you like to search for?")
-            search_query = command()
-            if search_query != "None":
-                webbrowser.open(f"https://www.google.com/search?q={search_query}")
+        elif 'google' in query:
+            if 'search' in query:
+                speak("What would you like to search for?")
+                search_query = command()
+                if search_query != "None":
+                    webbrowser.open(f"https://www.google.com/search?q={search_query}")
+            else:
+                speak("Opening Google.")
+                webbrowser.open("https://www.google.com/")
 
-        elif 'the weather' in query:
+        elif 'weather' in query:
+            speak("Here's the weather.")
             webbrowser.open("https://www.msn.com/en-ca/weather/forecast/in-Ottawa,Ontario?loc=eyJsIjoiT3R0YXdhIiwiciI6Ik9udGFyaW8iLCJyMiI6Ik90dGF3YSIsImMiOiJDYW5hZGEiLCJpIjoiQ0EiLCJnIjoiZW4tY2EiLCJ4IjoiLTc1LjY5MjQiLCJ5IjoiNDUuNDIwNCJ9&weadegreetype=C&ocid=winp2fptaskbar&cvid=36cb0e19ac7644dba33c69f30bec5a63&content=TeaserDayTempChange_wxnwtsdtr2t111/")
 
-        elif 'play music' in query or 'open spotify' in query:
+        elif 'play music' in query or 'spotify' in query:
             webbrowser.open("https://open.spotify.com/")
             speak("Opening Spotify.")
 
@@ -169,11 +174,15 @@ if __name__=="__main__": ## this is the root function
             strTime = datetime.datetime.now().strftime("%H:%M:%S")
             speak(f"the time is {strTime}")
 
-        elif 'search on youtube' in query:
-            speak("What would you like to search for?")
-            search_query = command()
-            if search_query != "None":
-                webbrowser.open(f"https://www.youtube.com/results?search_query={search_query}")
+        elif 'youtube' in query:
+            if 'search' in query:
+                speak("What would you like to search for?")
+                search_query = command()
+                if search_query != "None":
+                    webbrowser.open(f"https://www.youtube.com/results?search_query={search_query}")
+            else:
+                speak("Opening YouTube.")
+                webbrowser.open("https://www.youtube.com/")
 
         elif 'change voice' in query:
             change_voice()
